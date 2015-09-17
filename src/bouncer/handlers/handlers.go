@@ -24,7 +24,7 @@ func Participate(db BouncerDB) func(http.ResponseWriter, *http.Request) {
 		uid, err := strconv.ParseInt(req.URL.Query()["uid"][0], 10, 64)
 
 		if err != nil {
-			r.JSON(w, http.StatusInternalServerError, "Can't parse uid")
+			r.JSON(w, http.StatusBadRequest, "Can't parse uid")
 		}
 
 		resp := abtest.Participate(db.GetABTests(), uid)

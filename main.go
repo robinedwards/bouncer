@@ -1,7 +1,7 @@
 package main
 
 import (
-	"abtest"
+	"bouncer/abtest"
 	"flag"
 	"github.com/gorilla/mux"
 	"github.com/unrolled/render"

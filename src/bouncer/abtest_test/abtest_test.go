@@ -1,7 +1,7 @@
 package abtest_test
 
 import "testing"
-import "abtest"
+import "bouncer/abtest"
 
 func TestBasicAB(t *testing.T) {
 	newTest := abtest.NewABTest("test",

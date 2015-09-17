@@ -29,7 +29,7 @@ func NewABTest(name string, alternatives ...Alternative) ABTest {
 }
 
 func (test *ABTest) GetAlternative(uid int64) string {
-	alt, err := test.ring.GetNode(strconv.FormatInt(uid, 64))
+	alt, err := test.ring.GetNode(strconv.FormatInt(uid, 10))
 
 	if !err {
 		panic(err)

@@ -41,7 +41,7 @@ func TestParticipate(t *testing.T) {
     mockDb := MockDB{}
 
     homeHandle := handlers.Participate(mockDb)
-    req, _ := http.NewRequest("GET", "/participate?uid=1", nil)
+    req, _ := http.NewRequest("GET", "/participate/?uid=1", nil)
     w := httptest.NewRecorder()
 
     homeHandle(w, req)
@@ -54,7 +54,7 @@ func TestBadParticipate(t *testing.T) {
     mockDb := MockDB{}
 
     homeHandle := handlers.Participate(mockDb)
-    req, _ := http.NewRequest("GET", "/participate?uid=f", nil)
+    req, _ := http.NewRequest("GET", "/participate/?uid=f", nil)
     w := httptest.NewRecorder()
 
     homeHandle(w, req)

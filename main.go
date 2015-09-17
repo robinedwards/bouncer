@@ -38,7 +38,7 @@ func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", handlers.ListABTests(db))
-	router.HandleFunc("/participate", handlers.Participate(db))
+	router.HandleFunc("/participate/", handlers.Participate(db))
 
 	http.Handle("/", router)
 

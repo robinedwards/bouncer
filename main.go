@@ -7,6 +7,7 @@ import (
 	"github.com/unrolled/render"
 	"net/http"
 	"strconv"
+	"fmt"
 )
 
 var LiveABTests = []abtest.ABTest{}
@@ -48,6 +49,6 @@ func main() {
 
 	http.Handle("/", router)
 
-	println("Listening on " + *listenPtr)
+	fmt.Println("Listening on " + *listenPtr)
 	http.ListenAndServe(*listenPtr, nil)
 }

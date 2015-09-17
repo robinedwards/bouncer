@@ -22,3 +22,17 @@ _testmain.go
 *.exe
 *.test
 *.prof
+
+# external libs
+src/github.com/*
+
+# vim
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
+
+# intelij
+.idea/

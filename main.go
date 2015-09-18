@@ -32,7 +32,7 @@ func init() {
 		experiment.Alternative{Name: "a", Weight: 1},
 		experiment.Alternative{Name: "b", Weight: 1}))
 
-	bouncerConfig := config.LoadConfig(`{
+	bouncerConfig, _ := config.LoadConfig(`{
   "groups": [
     {
       "name": "admins",
@@ -49,15 +49,16 @@ func init() {
       ]
     }
   ],
-  "features": {
-    "audio_mode": {
-      "groups": {
-        "admins": 1,
-        "users": 0
-      },
-      "enabled": 0.5
-    }
-  },
+"features": [
+  {
+	"name": "audio_mode",
+	"groups": {
+	  "admins": 1,
+	  "users": 0
+	},
+	"enabled": 0.5
+  }
+],
   "experiments": [
     {
       "name": "progress_bar",

@@ -5,9 +5,9 @@ import (
 	"bouncer/experiment"
 	"bouncer/handlers"
 	"flag"
+	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
-	"fmt"
 )
 
 type BouncerDB struct {

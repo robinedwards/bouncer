@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"net/http"
 	"bouncer/experiment"
 	"github.com/unrolled/render"
+	"net/http"
 )
 
 type BouncerDB interface {
@@ -11,14 +11,14 @@ type BouncerDB interface {
 }
 
 func ListExperiments(db BouncerDB) func(http.ResponseWriter, *http.Request) {
-	return func (w http.ResponseWriter, req *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
 		r := render.New()
 		r.JSON(w, http.StatusOK, db.GetExperiments())
 	}
 }
 
 func Participate(db BouncerDB) func(http.ResponseWriter, *http.Request) {
-	return func (w http.ResponseWriter, req *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
 		r := render.New()
 		var uid string
 		q := req.URL.Query()

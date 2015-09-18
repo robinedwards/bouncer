@@ -1,9 +1,9 @@
 package feature_test
 
 import (
-	"testing"
 	"bouncer/feature"
 	"strconv"
+	"testing"
 )
 
 func TestFeature(t *testing.T) {

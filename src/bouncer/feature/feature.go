@@ -5,9 +5,9 @@ import (
 )
 
 type Feature struct {
-	Name         string
-	enabled		 float32
-	ring         *hashring.HashRing
+	Name    string
+	enabled float32
+	ring    *hashring.HashRing
 }
 
 func NewFeature(name string, enabled float32) Feature {

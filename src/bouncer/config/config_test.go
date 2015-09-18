@@ -1,9 +1,10 @@
 package config_test
+
 import (
-	"testing"
 	"bouncer/config"
 	"bouncer/experiment"
 	"reflect"
+	"testing"
 )
 
 var exampleJsonConfig = `

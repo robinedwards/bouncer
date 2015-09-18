@@ -1,14 +1,14 @@
 package handlers_test
 
-import(
-    "net/http"
-    "net/http/httptest"
-    "testing"
-	"bouncer/handlers"
+import (
 	"bouncer/experiment"
+	"bouncer/handlers"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 )
 
-type MockDB struct {}
+type MockDB struct{}
 
 func (db MockDB) GetExperiments() []experiment.Experiment {
 	tests := make([]experiment.Experiment, 0)
@@ -25,40 +25,40 @@ func (db MockDB) GetExperiments() []experiment.Experiment {
 }
 
 func TestListExperiments(t *testing.T) {
-    mockDb := MockDB{}
+	mockDb := MockDB{}
 
-    homeHandle := handlers.ListExperiments(mockDb)
-    req, _ := http.NewRequest("GET", "", nil)
-    w := httptest.NewRecorder()
+	homeHandle := handlers.ListExperiments(mockDb)
+	req, _ := http.NewRequest("GET", "", nil)
+	w := httptest.NewRecorder()
 
-    homeHandle(w, req)
-    if w.Code != http.StatusOK {
-        t.Errorf("Home page didn't return %v", http.StatusOK)
-    }
+	homeHandle(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("Home page didn't return %v", http.StatusOK)
+	}
 }
 
 func TestParticipate(t *testing.T) {
-    mockDb := MockDB{}
+	mockDb := MockDB{}
 
-    homeHandle := handlers.Participate(mockDb)
-    req, _ := http.NewRequest("GET", "/participate/?uid=1", nil)
-    w := httptest.NewRecorder()
+	homeHandle := handlers.Participate(mockDb)
+	req, _ := http.NewRequest("GET", "/participate/?uid=1", nil)
+	w := httptest.NewRecorder()
 
-    homeHandle(w, req)
-    if w.Code != http.StatusOK {
-        t.Errorf("Participate page didn't return %v", http.StatusOK)
-    }
+	homeHandle(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("Participate page didn't return %v", http.StatusOK)
+	}
 }
 
 func TestBadParticipate(t *testing.T) {
-    mockDb := MockDB{}
+	mockDb := MockDB{}
 
-    homeHandle := handlers.Participate(mockDb)
-    req, _ := http.NewRequest("GET", "/participate/?n=f", nil)
-    w := httptest.NewRecorder()
+	homeHandle := handlers.Participate(mockDb)
+	req, _ := http.NewRequest("GET", "/participate/?n=f", nil)
+	w := httptest.NewRecorder()
 
-    homeHandle(w, req)
-    if w.Code != http.StatusBadRequest {
-        t.Errorf("Home page didn't return %v", http.StatusBadRequest)
-    }
+	homeHandle(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("Home page didn't return %v", http.StatusBadRequest)
+	}
 }

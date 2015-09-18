@@ -1,0 +1,49 @@
+{
+  "groups": [
+    {
+      "name": "admins",
+      "uids": [
+        "8",
+        "32"
+      ]
+    },
+    {
+      "name": "testers",
+      "uids": [
+        "8",
+        "32"
+      ]
+    }
+  ],
+  "features": [
+    {
+      "name": "audio_mode",
+      "groups": {
+        "admins": 1,
+        "users": 0
+      },
+      "enabled": 0.5
+    }
+  ],
+  "experiments": [
+    {
+      "name": "progress_bar",
+      "groups": [
+        {
+          "admins": "green",
+          "testers": "red"
+        }
+      ],
+      "alternatives": [
+        {
+          "name": "green",
+          "weight": 1
+        },
+        {
+          "name": "red",
+          "weight": 9
+        }
+      ]
+    }
+  ]
+}

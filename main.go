@@ -32,61 +32,12 @@ func init() {
 		experiment.Alternative{Name: "a", Weight: 1},
 		experiment.Alternative{Name: "b", Weight: 1}))
 
-	bouncerConfig, _ := config.LoadConfig(`{
-  "groups": [
-    {
-      "name": "admins",
-      "uids": [
-        "8",
-        "32"
-      ]
-    },
-    {
-      "name": "testers",
-      "uids": [
-        "8",
-        "32"
-      ]
-    }
-  ],
-"features": [
-  {
-	"name": "audio_mode",
-	"groups": {
-	  "admins": 1,
-	  "users": 0
-	},
-	"enabled": 0.5
-  }
-],
-  "experiments": [
-    {
-      "name": "progress_bar",
-      "groups": [
-        {
-          "admins": "green",
-          "testers": "red"
-        }
-      ],
-      "alternatives": [
-        {
-          "name": "green",
-          "weight": 1
-        },
-        {
-          "name": "red",
-          "weight": 9
-        }
-      ]
-    }
-  ]
-}`)
-
-	fmt.Println(bouncerConfig)
 }
 
 func main() {
 	listenPtr := flag.String("listen", "localhost:8000", "host and port to listen on")
+	configPtr := flag.String("config", "", "config file")
+
 	flag.Parse()
 
 	router := mux.NewRouter()
@@ -94,6 +45,18 @@ func main() {
 	router.HandleFunc("/participate/", handlers.Participate(db))
 
 	http.Handle("/", router)
+
+	if len(*configPtr) == 0 {
+		fmt.Println("No config file supplied with --config")
+		return
+	}
+
+	bouncerConfig, err := config.LoadConfigFile(*configPtr)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(bouncerConfig)
 
 	fmt.Println("Listening on " + *listenPtr)
 	http.ListenAndServe(*listenPtr, nil)

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"bouncer/feature"
 	"fmt"
+	"io/ioutil"
 )
 
 type Config struct {
@@ -18,7 +19,6 @@ type Group struct {
 	Uids []string
 }
 
-// todo: doc
 func LoadConfig(jsonConfig string) (Config, error) {
 	if len(jsonConfig) == 0 {
 		return Config{}, nil
@@ -26,9 +26,19 @@ func LoadConfig(jsonConfig string) (Config, error) {
 
 	var config Config
 	err := json.Unmarshal([]byte(jsonConfig), &config)
-	if err != nil {
-		fmt.Println(err)
-	}
 
 	return config, err
+}
+
+func LoadConfigFile(filename string) (Config, error) {
+	var config Config
+
+	file, err := ioutil.ReadFile(filename)
+    if err != nil {
+        fmt.Printf("Error loading file: %v\n", err)
+		return config, err
+    }
+
+    merr := json.Unmarshal(file, &config)
+    return config, merr
 }

@@ -2,8 +2,8 @@ package config
 
 import (
 	"bouncer/experiment"
-	"encoding/json"
 	"bouncer/feature"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 )
@@ -11,7 +11,7 @@ import (
 type Config struct {
 	Experiments []experiment.Experiment
 	Groups      []Group
-	Features	[]feature.Feature
+	Features    []feature.Feature
 }
 
 type Group struct {
@@ -34,11 +34,11 @@ func LoadConfigFile(filename string) (Config, error) {
 	var config Config
 
 	file, err := ioutil.ReadFile(filename)
-    if err != nil {
-        fmt.Printf("Error loading file: %v\n", err)
+	if err != nil {
+		fmt.Printf("Error loading file: %v\n", err)
 		return config, err
-    }
+	}
 
-    merr := json.Unmarshal(file, &config)
-    return config, merr
+	merr := json.Unmarshal(file, &config)
+	return config, merr
 }

@@ -58,7 +58,6 @@ var exampleJsonConfig = `
         ]
       }`
 
-
 func TestValidJson(t *testing.T) {
 	testConfig, err := config.LoadConfig(exampleJsonConfig)
 

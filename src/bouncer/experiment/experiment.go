@@ -2,7 +2,6 @@ package experiment
 
 import (
 	"github.com/serialx/hashring"
-	"strconv"
 )
 
 type Experiment struct {
@@ -28,8 +27,8 @@ func NewExperiment(name string, alternatives ...Alternative) Experiment {
 	return Experiment{name, alternatives, *ring}
 }
 
-func (exp *Experiment) GetAlternative(uid int64) string {
-	alt, err := exp.ring.GetNode(strconv.FormatInt(uid, 10))
+func (exp *Experiment) GetAlternative(uid string) string {
+	alt, err := exp.ring.GetNode(uid)
 
 	if !err {
 		panic(err)
@@ -38,7 +37,7 @@ func (exp *Experiment) GetAlternative(uid int64) string {
 	return alt
 }
 
-func Participate(experiments []Experiment, uid int64) map[string]string {
+func Participate(experiments []Experiment, uid string) map[string]string {
 	r := make(map[string]string)
 
 	for _, exp := range experiments {

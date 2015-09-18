@@ -46,7 +46,7 @@ func TestParticipate(t *testing.T) {
 
     homeHandle(w, req)
     if w.Code != http.StatusOK {
-        t.Errorf("Home page didn't return %v", http.StatusOK)
+        t.Errorf("Participate page didn't return %v", http.StatusOK)
     }
 }
 
@@ -54,7 +54,7 @@ func TestBadParticipate(t *testing.T) {
     mockDb := MockDB{}
 
     homeHandle := handlers.Participate(mockDb)
-    req, _ := http.NewRequest("GET", "/participate/?uid=f", nil)
+    req, _ := http.NewRequest("GET", "/participate/?n=f", nil)
     w := httptest.NewRecorder()
 
     homeHandle(w, req)

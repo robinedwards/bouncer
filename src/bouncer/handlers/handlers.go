@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"bouncer/experiment"
 	"github.com/unrolled/render"
-	"strconv"
 )
 
 type BouncerDB interface {
@@ -21,10 +20,14 @@ func ListExperiments(db BouncerDB) func(http.ResponseWriter, *http.Request) {
 func Participate(db BouncerDB) func(http.ResponseWriter, *http.Request) {
 	return func (w http.ResponseWriter, req *http.Request) {
 		r := render.New()
-		uid, err := strconv.ParseInt(req.URL.Query()["uid"][0], 10, 64)
+		var uid string
+		q := req.URL.Query()
 
-		if err != nil {
+		if len(q) == 0 || len(q["uid"]) == 0 || len(q["uid"][0]) == 0 {
 			r.JSON(w, http.StatusBadRequest, "Can't parse uid")
+			return
+		} else {
+			uid = q["uid"][0]
 		}
 
 		resp := experiment.Participate(db.GetExperiments(), uid)

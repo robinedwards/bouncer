@@ -2,19 +2,19 @@ package handlers
 
 import (
 	"net/http"
-	"bouncer/abtest"
+	"bouncer/experiment"
 	"github.com/unrolled/render"
 	"strconv"
 )
 
 type BouncerDB interface {
-	GetABTests() []abtest.ABTest
+	GetExperiments() []experiment.Experiment
 }
 
-func ListABTests(db BouncerDB) func(http.ResponseWriter, *http.Request) {
+func ListExperiments(db BouncerDB) func(http.ResponseWriter, *http.Request) {
 	return func (w http.ResponseWriter, req *http.Request) {
 		r := render.New()
-		r.JSON(w, http.StatusOK, db.GetABTests())
+		r.JSON(w, http.StatusOK, db.GetExperiments())
 	}
 }
 
@@ -27,7 +27,7 @@ func Participate(db BouncerDB) func(http.ResponseWriter, *http.Request) {
 			r.JSON(w, http.StatusBadRequest, "Can't parse uid")
 		}
 
-		resp := abtest.Participate(db.GetABTests(), uid)
+		resp := experiment.Participate(db.GetExperiments(), uid)
 
 		r.JSON(w, http.StatusOK, resp)
 	}

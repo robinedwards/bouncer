@@ -1,12 +1,12 @@
-package abtest_test
+package experiment_test
 
 import "testing"
-import "bouncer/abtest"
+import "bouncer/experiment"
 
 func TestBasicAB(t *testing.T) {
-	newTest := abtest.NewABTest("test",
-		abtest.Alternative{Name: "a", Weight: 1},
-		abtest.Alternative{Name: "b", Weight: 1})
+	newTest := experiment.NewExperiment("test",
+		experiment.Alternative{Name: "a", Weight: 1},
+		experiment.Alternative{Name: "b", Weight: 1})
 
 	if newTest.Name != "test" {
 		t.Errorf("Incorrect test name")
@@ -14,8 +14,8 @@ func TestBasicAB(t *testing.T) {
 }
 
 func TestGetAlternate(t *testing.T) {
-	newTest := abtest.NewABTest("test",
-		abtest.Alternative{Name: "a", Weight: 1}, abtest.Alternative{Name: "b", Weight: 1})
+	newTest := experiment.NewExperiment("test",
+		experiment.Alternative{Name: "a", Weight: 1}, experiment.Alternative{Name: "b", Weight: 1})
 
 	alternate := newTest.GetAlternative(1)
 

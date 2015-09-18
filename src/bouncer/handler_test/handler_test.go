@@ -5,29 +5,29 @@ import(
     "net/http/httptest"
     "testing"
 	"bouncer/handlers"
-	"bouncer/abtest"
+	"bouncer/experiment"
 )
 
 type MockDB struct {}
 
-func (db MockDB) GetABTests() []abtest.ABTest {
-	tests := make([]abtest.ABTest, 0)
+func (db MockDB) GetExperiments() []experiment.Experiment {
+	tests := make([]experiment.Experiment, 0)
 
-	tests = append(tests, abtest.NewABTest("test1",
-		abtest.Alternative{Name: "a", Weight: 1},
-		abtest.Alternative{Name: "b", Weight: 1}))
+	tests = append(tests, experiment.NewExperiment("test1",
+		experiment.Alternative{Name: "a", Weight: 1},
+		experiment.Alternative{Name: "b", Weight: 1}))
 
-	tests = append(tests, abtest.NewABTest("test2",
-		abtest.Alternative{Name: "a", Weight: 1},
-		abtest.Alternative{Name: "b", Weight: 1}))
+	tests = append(tests, experiment.NewExperiment("test2",
+		experiment.Alternative{Name: "a", Weight: 1},
+		experiment.Alternative{Name: "b", Weight: 1}))
 
 	return tests
 }
 
-func TestListABTests(t *testing.T) {
+func TestListExperiments(t *testing.T) {
     mockDb := MockDB{}
 
-    homeHandle := handlers.ListABTests(mockDb)
+    homeHandle := handlers.ListExperiments(mockDb)
     req, _ := http.NewRequest("GET", "", nil)
     w := httptest.NewRecorder()
 

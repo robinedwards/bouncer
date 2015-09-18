@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bouncer/abtest"
+	"bouncer/experiment"
 	"bouncer/handlers"
 	"flag"
 	"github.com/gorilla/mux"
@@ -10,26 +10,26 @@ import (
 )
 
 type BouncerDB struct {
-	ActiveABTests []abtest.ABTest
+	ActiveExperiments []experiment.Experiment
 }
 
-func (db BouncerDB) GetABTests() []abtest.ABTest {
-	return db.ActiveABTests
+func (db BouncerDB) GetExperiments() []experiment.Experiment {
+	return db.ActiveExperiments
 }
 
 var db BouncerDB
 
 func init() {
-	db.ActiveABTests = make([]abtest.ABTest, 0)
+	db.ActiveExperiments = make([]experiment.Experiment, 0)
 
-	// setup abtests for demo
-	db.ActiveABTests = append(db.ActiveABTests, abtest.NewABTest("test1",
-		abtest.Alternative{Name: "a", Weight: 1},
-		abtest.Alternative{Name: "b", Weight: 1}))
+	// setup experiments for demo
+	db.ActiveExperiments = append(db.ActiveExperiments, experiment.NewExperiment("test1",
+		experiment.Alternative{Name: "a", Weight: 1},
+		experiment.Alternative{Name: "b", Weight: 1}))
 
-	db.ActiveABTests = append(db.ActiveABTests, abtest.NewABTest("test2",
-		abtest.Alternative{Name: "a", Weight: 1},
-		abtest.Alternative{Name: "b", Weight: 1}))
+	db.ActiveExperiments = append(db.ActiveExperiments, experiment.NewExperiment("test2",
+		experiment.Alternative{Name: "a", Weight: 1},
+		experiment.Alternative{Name: "b", Weight: 1}))
 }
 
 func main() {
@@ -37,7 +37,7 @@ func main() {
 	flag.Parse()
 
 	router := mux.NewRouter()
-	router.HandleFunc("/", handlers.ListABTests(db))
+	router.HandleFunc("/", handlers.ListExperiments(db))
 	router.HandleFunc("/participate/", handlers.Participate(db))
 
 	http.Handle("/", router)

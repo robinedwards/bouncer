@@ -7,10 +7,29 @@ import (
 	"net/http"
 )
 
+func Root(w http.ResponseWriter, req *http.Request) {
+	r := render.New()
+	r.JSON(w, http.StatusOK, map[string]string{"App": "bouncer"})
+}
+
 func ListExperiments(cfg config.Config) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 		r := render.New()
 		r.JSON(w, http.StatusOK, cfg.Experiments)
+	}
+}
+
+func ListFeatures(cfg config.Config) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
+		r := render.New()
+		r.JSON(w, http.StatusOK, cfg.Features)
+	}
+}
+
+func ListGroups(cfg config.Config) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
+		r := render.New()
+		r.JSON(w, http.StatusOK, cfg.Groups)
 	}
 }
 

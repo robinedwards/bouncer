@@ -29,8 +29,12 @@ func main() {
 
 
 	router := mux.NewRouter()
-	router.HandleFunc("/", handlers.ListExperiments(bouncerConfig))
+	router.HandleFunc("/", handlers.Root)
+	router.HandleFunc("/experiments/", handlers.ListExperiments(bouncerConfig))
+	router.HandleFunc("/groups/", handlers.ListGroups(bouncerConfig))
+	router.HandleFunc("/features/", handlers.ListFeatures(bouncerConfig))
 	router.HandleFunc("/participate/", handlers.Participate(bouncerConfig))
+
 
 	http.Handle("/", router)
 

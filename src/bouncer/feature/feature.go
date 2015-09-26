@@ -6,7 +6,7 @@ import (
 
 type Feature struct {
 	Name    string
-	enabled float32
+	Enabled float32
 	ring    *hashring.HashRing
 }
 
@@ -30,7 +30,7 @@ func NewFeature(name string, enabled float32) Feature {
 
 func (f Feature) IsEnabled(uid string) bool {
 	if f.ring == nil {
-		return f.enabled == 1
+		return f.Enabled == 1
 	}
 
 	r, _ := f.ring.GetNode(uid)

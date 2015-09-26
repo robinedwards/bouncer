@@ -2,22 +2,19 @@ package handlers
 
 import (
 	"bouncer/experiment"
+	"bouncer/config"
 	"github.com/unrolled/render"
 	"net/http"
 )
 
-type BouncerDB interface {
-	GetExperiments() []experiment.Experiment
-}
-
-func ListExperiments(db BouncerDB) func(http.ResponseWriter, *http.Request) {
+func ListExperiments(cfg config.Config) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 		r := render.New()
-		r.JSON(w, http.StatusOK, db.GetExperiments())
+		r.JSON(w, http.StatusOK, cfg.Experiments)
 	}
 }
 
-func Participate(db BouncerDB) func(http.ResponseWriter, *http.Request) {
+func Participate(cfg config.Config) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 		r := render.New()
 		var uid string
@@ -30,7 +27,7 @@ func Participate(db BouncerDB) func(http.ResponseWriter, *http.Request) {
 			uid = q["uid"][0]
 		}
 
-		resp := experiment.Participate(db.GetExperiments(), uid)
+		resp := experiment.Participate(cfg.Experiments, uid)
 
 		r.JSON(w, http.StatusOK, resp)
 	}

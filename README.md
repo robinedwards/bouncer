@@ -6,8 +6,8 @@
 
     $ export GOPATH=$(pwd)
 
-    $ go test bouncer/experiment_test
-    $ go test bouncer/handler_test
+    $ go test bouncer/experiment
+    $ go test bouncer/handler
 
     $ go run main.go
     Listening on localhost:8000

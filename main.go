@@ -6,20 +6,21 @@ import (
 	"flag"
 	"fmt"
 	"github.com/gorilla/mux"
+	"os"
 	"net/http"
 )
 
 func main() {
 	// parse arguments
 	listenPtr := flag.String("listen", "localhost:8000", "host and port to listen on")
-	configPtr := flag.String("config", "", "config file")
+	configPtr := flag.String("config", "config.json", "config file")
 
 	flag.Parse()
 
 	// load config
 	bouncerConfig, err := config.LoadConfigFile(*configPtr)
 	if err != nil {
-		panic(err)
+		os.Exit(1)
 	}
 
 	if len(*configPtr) == 0 {

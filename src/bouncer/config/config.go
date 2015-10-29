@@ -19,13 +19,44 @@ type Group struct {
 	Uids []string
 }
 
+// Take group configurations and wire them into features and experiments
+func patchInGroups(config Config) error {
+
+	groupMap := make(map[string][]string)
+
+	for _, group := range config.Groups {
+		groupMap[group.Name] = group.Uids
+	}
+
+	for _, feature := range config.Features {
+		err := feature.SetupGroups(groupMap)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, experiment := range config.Experiments {
+		err := experiment.SetupGroups(groupMap)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func LoadConfig(jsonConfig string) (Config, error) {
 	if len(jsonConfig) == 0 {
 		return Config{}, nil
 	}
 
 	var config Config
-	err := json.Unmarshal([]byte(jsonConfig), &config)
+	merr := json.Unmarshal([]byte(jsonConfig), &config)
+	if merr != nil {
+		return config, merr
+	}
+
+	err := patchInGroups(config)
 
 	return config, err
 }
@@ -35,10 +66,16 @@ func LoadConfigFile(filename string) (Config, error) {
 
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
-		fmt.Printf("Error loading file: %v\n", err)
+		fmt.Printf("%v\n", err)
 		return config, err
 	}
 
 	merr := json.Unmarshal(file, &config)
-	return config, merr
+	if merr != nil {
+		return config, merr
+	}
+
+	perr := patchInGroups(config)
+
+	return config, perr
 }

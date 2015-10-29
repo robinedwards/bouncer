@@ -74,7 +74,10 @@ func TestValidJson(t *testing.T) {
 	}
 
 	if reflect.DeepEqual(testConfig.Experiments[0],
-		experiment.NewExperiment("progress_bar", experiment.Alternative{"green", 1}, experiment.Alternative{"red", 1})) {
+		experiment.NewExperiment("progress_bar",
+          make(map[string]string),
+          experiment.Alternative{"green", 1},
+          experiment.Alternative{"red", 1})) {
 		t.Error("Wrong experiment for example config")
 	}
 }

@@ -5,6 +5,7 @@ import "bouncer/experiment"
 
 func TestBasicAB(t *testing.T) {
 	newTest := experiment.NewExperiment("test",
+		make(map[string]string),
 		experiment.Alternative{Name: "a", Weight: 1},
 		experiment.Alternative{Name: "b", Weight: 1})
 
@@ -14,7 +15,7 @@ func TestBasicAB(t *testing.T) {
 }
 
 func TestGetAlternate(t *testing.T) {
-	newTest := experiment.NewExperiment("test",
+	newTest := experiment.NewExperiment("test", make(map[string]string),
 		experiment.Alternative{Name: "a", Weight: 1}, experiment.Alternative{Name: "b", Weight: 1})
 
 	alternate := newTest.GetAlternative("1")

@@ -30,3 +30,30 @@ func TestGetAlternate(t *testing.T) {
 		t.Errorf("Inconsistent hash")
 	}
 }
+
+func TestGroupMemberGetsCorrectAlternate(t *testing.T) {
+	groupConfig := map[string]string{
+		"group_a": "yellow_button",
+		"group_b": "red_button",
+	}
+
+	groupMapping := map[string][]string{
+		"group_a": {"1", "2"},
+		"group_b": {"3", "4"},
+	}
+
+	newTest := experiment.NewExperiment("test",
+		groupConfig,
+		experiment.Alternative{Name: "yellow_button", Weight: 1},
+		experiment.Alternative{Name: "red_button", Weight: 1})
+
+	newTest.SetupGroups(groupMapping)
+
+	if newTest.GetAlternative("1") != "yellow_button" {
+		t.Errorf("Expecting yellow button for uid 1 in group a")
+	}
+
+	if newTest.GetAlternative("3") != "red_button" {
+		t.Errorf("Expecting red button for uid 3 in group b")
+	}
+}

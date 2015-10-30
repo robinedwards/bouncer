@@ -3,6 +3,7 @@ package handlers
 import (
 	"bouncer/experiment"
 	"bouncer/config"
+	"bouncer/feature"
 	"github.com/unrolled/render"
 	"net/http"
 )
@@ -33,6 +34,11 @@ func ListGroups(cfg config.Config) func(http.ResponseWriter, *http.Request) {
 	}
 }
 
+type ParticipateResponse struct {
+	Experiments map[string]string
+	Features 	map[string]bool
+}
+
 func Participate(cfg config.Config) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 		r := render.New()
@@ -46,7 +52,11 @@ func Participate(cfg config.Config) func(http.ResponseWriter, *http.Request) {
 			uid = q["uid"][0]
 		}
 
-		resp := experiment.Participate(cfg.Experiments, uid)
+		resp := new(ParticipateResponse)
+
+		resp.Experiments = experiment.Participate(cfg.Experiments, uid)
+		resp.Features = feature.Participate(cfg.Features, uid)
+
 
 		r.JSON(w, http.StatusOK, resp)
 	}

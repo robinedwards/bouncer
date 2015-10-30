@@ -56,3 +56,13 @@ func (f Feature) IsEnabled(uid string) bool {
 
 	return r == "enabled"
 }
+
+func Participate(features []Feature, uid string) map[string]bool {
+	r := make(map[string]bool)
+
+	for _, feature := range features {
+		r[feature.Name] = feature.IsEnabled(uid)
+	}
+
+	return r
+}

@@ -42,3 +42,26 @@ func TestFeaturePartEnabled(t *testing.T) {
 		t.Errorf("Should be mix of disabled and enabled")
 	}
 }
+
+func TestFeatureWithGroupMapping(t *testing.T)  {
+	groupConfig := map[string]int{
+		"group_a": 1,
+		"group_b": 0,
+	}
+
+	groupMapping := map[string][]string{
+		"group_a": {"1", "2"},
+		"group_b": {"3", "4"},
+	}
+
+	f := feature.NewFeature("video", 0, groupConfig)
+	f.SetupGroups(groupMapping)
+
+	if !f.IsEnabled("1") {
+		t.Errorf("uid 1 is in group a should be enabled")
+	}
+
+	if f.IsEnabled("3") {
+		t.Errorf("uid 3 is in group b should be disabled")
+	}
+}

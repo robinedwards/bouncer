@@ -43,13 +43,13 @@ func (f Feature) SetupGroups(groups map[string][]string) error {
 }
 
 func (f Feature) IsEnabled(uid string) bool {
-	if f.ring == nil {
-		return f.Enabled == 1
-	}
-
 	// has uid been overriden in a group
 	if status, ok := f.uidMapping[uid]; ok {
 		return status == 1
+	}
+
+	if f.ring == nil {
+		return f.Enabled == 1
 	}
 
 	r, _ := f.ring.GetNode(uid)

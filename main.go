@@ -6,9 +6,11 @@ import (
 	"flag"
 	"fmt"
 	"github.com/gorilla/mux"
-	"os"
 	"net/http"
+	"os"
 )
+
+import gorillahandlers "github.com/gorilla/handlers"
 
 func main() {
 	// parse arguments
@@ -28,7 +30,6 @@ func main() {
 		return
 	}
 
-
 	router := mux.NewRouter()
 	router.HandleFunc("/", handlers.Root)
 	router.HandleFunc("/experiments/", handlers.ListExperiments(bouncerConfig))
@@ -36,8 +37,8 @@ func main() {
 	router.HandleFunc("/features/", handlers.ListFeatures(bouncerConfig))
 	router.HandleFunc("/participate/", handlers.Participate(bouncerConfig))
 
-
-	http.Handle("/", router)
+	loggedRouter := gorillahandlers.LoggingHandler(os.Stdout, router)
+	http.Handle("/", loggedRouter)
 
 	fmt.Println(bouncerConfig)
 

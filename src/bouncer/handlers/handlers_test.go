@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"bytes"
 )
 
 func mockConfig() config.Config {
@@ -74,13 +75,22 @@ func TestListGroups(t *testing.T) {
 	checkValidResponse(http.StatusOK, w, t)
 }
 
-func TestParticipate(t *testing.T) {
+
+func TestBasicParticipate(t *testing.T) {
 	mockCfg := mockConfig()
 
-	h := handlers.Participate(mockCfg)
-	req, _ := http.NewRequest("GET", "/participate/?uid=1", nil)
-	w := httptest.NewRecorder()
+	preq := handlers.ParticipateRequest{
+		Uid: "1",
+		Experiments: map[string][]string{"test1": {"a", "b"}},
+		Features: map[string]float32{"scrolling": 1},
+	}
 
+	h := handlers.Participate(mockCfg)
+	body, _ := json.Marshal(preq)
+
+	req, _ := http.NewRequest("POST", "/participate/", bytes.NewReader(body))
+	req.Header.Add("Content-Type", "application/json")
+	w := httptest.NewRecorder()
 	h(w, req)
 	checkValidResponse(http.StatusOK, w, t)
 
@@ -102,18 +112,5 @@ func TestParticipate(t *testing.T) {
 
 	if _, ok := resp.Features["scrolling"]; !ok {
 		t.Errorf("Couldn't find scrolling in the response", merr)
-	}
-}
-
-func TestBadParticipate(t *testing.T) {
-	mockCfg := mockConfig()
-
-	h := handlers.Participate(mockCfg)
-	req, _ := http.NewRequest("GET", "/participate/?n=f", nil)
-	w := httptest.NewRecorder()
-
-	h(w, req)
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("Participate page didn't return %v", http.StatusBadRequest)
 	}
 }

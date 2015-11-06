@@ -12,6 +12,7 @@ type Feature struct {
 	uidMapping map[string]int
 }
 
+
 func NewFeature(name string, enabled float32, groups map[string]int) Feature {
 	if enabled > 1 || enabled < 0 {
 		panic("enabled must be between > 0 and <= 1")
@@ -55,14 +56,4 @@ func (f Feature) IsEnabled(uid string) bool {
 	r, _ := f.ring.GetNode(uid)
 
 	return r == "enabled"
-}
-
-func Participate(features []Feature, uid string) map[string]bool {
-	r := make(map[string]bool)
-
-	for _, feature := range features {
-		r[feature.Name] = feature.IsEnabled(uid)
-	}
-
-	return r
 }

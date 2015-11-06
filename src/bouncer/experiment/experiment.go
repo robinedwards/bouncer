@@ -69,14 +69,3 @@ func (exp Experiment) SetupGroups(groups map[string][]string) error {
 
 	return nil
 }
-
-func Participate(experiments []Experiment, uid string) map[string]string {
-	r := make(map[string]string)
-
-	for _, exp := range experiments {
-		alt := exp.GetAlternative(uid)
-		r[exp.Name] = alt
-	}
-
-	return r
-}

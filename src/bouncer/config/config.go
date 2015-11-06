@@ -12,6 +12,8 @@ type Config struct {
 	Experiments []experiment.Experiment
 	Groups      []Group
 	Features    []feature.Feature
+	FeatureMap  map[string]feature.Feature
+	ExperimentMap map[string]experiment.Experiment
 }
 
 type Group struct {
@@ -20,7 +22,7 @@ type Group struct {
 }
 
 // Take group configurations and wire them into features and experiments
-func patchInGroups(config Config) error {
+func setupGroups(config Config) error {
 
 	groupMap := make(map[string][]string)
 
@@ -45,6 +47,27 @@ func patchInGroups(config Config) error {
 	return nil
 }
 
+// Create feature and experiment mappings
+func setupMappings(config Config) {
+	config.FeatureMap = make(map[string]feature.Feature)
+
+	for _, feature := range config.Features {
+		config.FeatureMap[feature.Name] = feature
+	}
+
+	config.ExperimentMap = make(map[string]experiment.Experiment)
+
+	for _, experiment := range config.Experiments {
+		config.ExperimentMap[experiment.Name] = experiment
+	}
+}
+
+func initConfig(config Config) error {
+	err := setupGroups(config)
+	setupMappings(config)
+	return err
+}
+
 func LoadConfig(jsonConfig string) (Config, error) {
 	if len(jsonConfig) == 0 {
 		return Config{}, nil
@@ -56,7 +79,7 @@ func LoadConfig(jsonConfig string) (Config, error) {
 		return config, merr
 	}
 
-	err := patchInGroups(config)
+	err := initConfig(config)
 
 	return config, err
 }
@@ -75,7 +98,7 @@ func LoadConfigFile(filename string) (Config, error) {
 		return config, merr
 	}
 
-	perr := patchInGroups(config)
+	perr := initConfig(config)
 
 	return config, perr
 }

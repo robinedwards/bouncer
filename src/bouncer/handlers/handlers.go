@@ -48,9 +48,16 @@ type ParticipateRequest struct {
 	Features	map[string]float32
 }
 
-
 func CheckFeatures(features map[string]float32, uid string, config config.Config) map[string]bool {
 	r := make(map[string]bool)
+
+	if len(features) == 0 {
+		for featureName, f := range config.FeatureMap {
+			r[featureName] = f.IsEnabled(uid)
+		}
+
+		return r
+	}
 
 	for featureName, _ := range features {
 		if f, ok := config.FeatureMap[featureName]; ok {
@@ -69,6 +76,16 @@ func CheckFeatures(features map[string]float32, uid string, config config.Config
 func CheckExperiments(experiments map[string][]string, uid string, config config.Config) map[string]string {
 	r := make(map[string]string)
 
+	// if we don't specify experiments to participate in return all
+	if len(experiments) == 0 {
+		println("Experiment map", config.ExperimentMap)
+		for experimentName, exp := range config.ExperimentMap {
+			r[experimentName] = exp.GetAlternative(uid)
+		}
+		return r
+	}
+
+	// else only return requested experiments
 	for experimentName, _ := range experiments {
 		if e, ok := config.ExperimentMap[experimentName]; ok {
 			r[experimentName] = e.GetAlternative(uid)

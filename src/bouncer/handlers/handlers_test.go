@@ -27,6 +27,8 @@ func mockConfig() config.Config {
 
 	cfg.Features = append(cfg.Features, feature.NewFeature("scrolling", 1, make(map[string]int)))
 
+	config.InitConfig(&cfg)
+
 	return cfg
 }
 
@@ -75,24 +77,21 @@ func TestListGroups(t *testing.T) {
 	checkValidResponse(http.StatusOK, w, t)
 }
 
-
-func TestBasicParticipate(t *testing.T) {
+func makeParticipateRequest(req handlers.ParticipateRequest) httptest.ResponseRecorder {
 	mockCfg := mockConfig()
 
-	preq := handlers.ParticipateRequest{
-		Uid: "1",
-		Experiments: map[string][]string{"test1": {"a", "b"}},
-		Features: map[string]float32{"scrolling": 1},
-	}
-
 	h := handlers.Participate(mockCfg)
-	body, _ := json.Marshal(preq)
+	body, _ := json.Marshal(req)
 
-	req, _ := http.NewRequest("POST", "/participate/", bytes.NewReader(body))
-	req.Header.Add("Content-Type", "application/json")
+	r, _ := http.NewRequest("POST", "/participate/", bytes.NewReader(body))
+	r.Header.Add("Content-Type", "application/json")
 	w := httptest.NewRecorder()
-	h(w, req)
-	checkValidResponse(http.StatusOK, w, t)
+	h(w, r)
+	return *w
+}
+
+func checkParticipateResponse(w httptest.ResponseRecorder, t *testing.T) handlers.ParticipateResponse {
+	checkValidResponse(http.StatusOK, &w, t)
 
 	resp := new(handlers.ParticipateResponse)
 
@@ -105,12 +104,41 @@ func TestBasicParticipate(t *testing.T) {
 	if merr != nil {
 		t.Errorf("Error unmarshalling %v", merr)
 	}
+	return *resp
+}
+
+func TestParticipateSpecificTests(t *testing.T) {
+	w := makeParticipateRequest(handlers.ParticipateRequest{
+		Uid: "1",
+		Experiments: map[string][]string{"test1": {"a", "b"}},
+		Features: map[string]float32{"scrolling": 1},
+	})
+
+	resp := checkParticipateResponse(w, t)
 
 	if _, ok := resp.Experiments["test1"]; !ok {
-		t.Errorf("Couldn't find test1 in the response", merr)
+		t.Errorf("Couldn't find test1 in the response")
 	}
 
 	if _, ok := resp.Features["scrolling"]; !ok {
-		t.Errorf("Couldn't find scrolling in the response", merr)
+		t.Errorf("Couldn't find scrolling in the response")
+	}
+}
+
+func TestBasicParticipate(t *testing.T) {
+	w := makeParticipateRequest(handlers.ParticipateRequest{
+		Uid: "1",
+		Experiments: map[string][]string{},
+		Features: map[string]float32{},
+	})
+
+	resp := checkParticipateResponse(w, t)
+
+	if _, ok := resp.Experiments["test1"]; !ok {
+		t.Errorf("Couldn't find test1 in the response")
+	}
+
+	if _, ok := resp.Features["scrolling"]; !ok {
+		t.Errorf("Couldn't find scrolling in the response")
 	}
 }

@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 )
 
 func Root(w http.ResponseWriter, req *http.Request) {
@@ -78,7 +79,6 @@ func CheckExperiments(experiments map[string][]string, uid string, config config
 
 	// if we don't specify experiments to participate in return all
 	if len(experiments) == 0 {
-		println("Experiment map", config.ExperimentMap)
 		for experimentName, exp := range config.ExperimentMap {
 			r[experimentName] = exp.GetAlternative(uid)
 		}
@@ -104,7 +104,7 @@ func CheckExperiments(experiments map[string][]string, uid string, config config
 }
 
 
-func Participate(cfg config.Config) func(http.ResponseWriter, *http.Request) {
+func Participate(cfg config.Config, ) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 		r := render.New()
 
@@ -118,12 +118,14 @@ func Participate(cfg config.Config) func(http.ResponseWriter, *http.Request) {
 		body, rerr := ioutil.ReadAll(req.Body)
 		if rerr != nil {
 			r.JSON(w, http.StatusBadRequest, fmt.Sprintf("Error reading body: %v", rerr))
+			fmt.Println("ERROR: reading body: %v", rerr)
 			return
 		}
 
 		err := json.Unmarshal(body, &preq)
 		if err != nil {
-			r.JSON(w, http.StatusBadRequest, fmt.Sprintf("Error decoding json: %c", err))
+			r.JSON(w, http.StatusBadRequest, fmt.Sprintf("Error decoding json: %v", err))
+			fmt.Println("ERROR: decoding json: %v", err)
 			return
 		}
 
@@ -132,8 +134,15 @@ func Participate(cfg config.Config) func(http.ResponseWriter, *http.Request) {
 		presp.Experiments = CheckExperiments(preq.Experiments, preq.Uid, cfg)
 		presp.Features = CheckFeatures(preq.Features, preq.Uid, cfg)
 
-		// TODO log this to file as json.
-
 		r.JSON(w, http.StatusOK, presp)
+		go logParticipation(*presp)
 	}
+}
+
+func logParticipation(presp ParticipateResponse) {
+	body, err := json.Marshal(presp)
+	if err != nil {
+		fmt.Println("ERROR: couldn't encode json response: %v", err)
+	}
+	log.Println(body)
 }

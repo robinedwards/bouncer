@@ -9,22 +9,28 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"gopkg.in/natefinch/lumberjack.v2"
+	"github.com/thoas/stats"
 	"net/http"
 	"os"
 	"log"
 	"os/signal"
 	"syscall"
+	"encoding/json"
 )
 
 func setupRouter(cfg config.Config) http.Handler {
+	ourStats := stats.New()
 	router := mux.NewRouter()
 	router.HandleFunc("/", handlers.Root)
 	router.HandleFunc("/experiments/", handlers.ListExperiments(cfg))
 	router.HandleFunc("/groups/", handlers.ListGroups(cfg))
 	router.HandleFunc("/features/", handlers.ListFeatures(cfg))
 	router.HandleFunc("/participate/", handlers.Participate(cfg))
-
-	return gorillahandlers.LoggingHandler(os.Stdout, router)
+	router.HandleFunc("/stats/", func(w http.ResponseWriter, r *http.Request) {
+        b, _ := json.Marshal(ourStats.Data())
+        w.Write(b)
+	})
+	return ourStats.Handler(gorillahandlers.LoggingHandler(os.Stdout, router))
 }
 
 func setupMetricsLogging(logfile string) {
@@ -67,8 +73,7 @@ func main() {
 		return
 	}
 	setupMetricsLogging(*logFilePtr)
-	http.Handle("/", setupRouter(bouncerConfig))
 
 	fmt.Println("Listening on", *listenPtr, "and logging to", *logFilePtr)
-	http.ListenAndServe(*listenPtr, nil)
+	http.ListenAndServe(*listenPtr, setupRouter(bouncerConfig))
 }

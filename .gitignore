@@ -25,6 +25,7 @@ _testmain.go
 
 # external libs
 src/github.com/*
+src/gopkg.in/*
 
 # vim
 [._]*.s[a-w][a-z]

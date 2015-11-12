@@ -14,7 +14,11 @@ import (
 
 func Root(w http.ResponseWriter, req *http.Request) {
 	r := render.New()
-	r.JSON(w, http.StatusOK, map[string]string{"App": "bouncer"})
+	r.JSON(w, http.StatusOK,
+		map[string][]string{
+			"App": {"bouncer"},
+			"Paths": {"/experiments/", "/features/", "/groups/", "/participate/", "/stats/"},
+		})
 }
 
 func ListExperiments(cfg config.Config) func(http.ResponseWriter, *http.Request) {

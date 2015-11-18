@@ -19,14 +19,9 @@ type Alternative struct {
 }
 
 func NewExperiment(name string, groups map[string]string, alternatives ...Alternative) Experiment {
-	weights := make(map[string]int)
-
-	for _, alt := range alternatives {
-		weights[alt.Name] = alt.Weight
-	}
-	ring := hashring.NewWithWeights(weights)
-
-	return Experiment{name, alternatives, ring, groups, make(map[string]string)}
+	exp := Experiment{name, alternatives, nil, groups, make(map[string]string)}
+	exp.SetupRing()
+	return exp
 }
 
 func (exp *Experiment) GetAlternative(uid string) string {

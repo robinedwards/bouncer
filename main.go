@@ -5,17 +5,17 @@ import gorillahandlers "github.com/gorilla/handlers"
 import (
 	"bouncer/config"
 	"bouncer/handlers"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/gorilla/mux"
-	"gopkg.in/natefinch/lumberjack.v2"
 	"github.com/thoas/stats"
+	"gopkg.in/natefinch/lumberjack.v2"
+	"log"
 	"net/http"
 	"os"
-	"log"
 	"os/signal"
 	"syscall"
-	"encoding/json"
 )
 
 func setupRouter(cfg config.Config) http.Handler {
@@ -27,8 +27,8 @@ func setupRouter(cfg config.Config) http.Handler {
 	router.HandleFunc("/features/", handlers.ListFeatures(cfg))
 	router.HandleFunc("/participate/", handlers.Participate(cfg))
 	router.HandleFunc("/stats/", func(w http.ResponseWriter, r *http.Request) {
-        b, _ := json.Marshal(ourStats.Data())
-        w.Write(b)
+		b, _ := json.Marshal(ourStats.Data())
+		w.Write(b)
 	})
 	return ourStats.Handler(gorillahandlers.LoggingHandler(os.Stdout, router))
 }

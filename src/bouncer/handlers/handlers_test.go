@@ -5,12 +5,12 @@ import (
 	"bouncer/experiment"
 	"bouncer/feature"
 	"bouncer/handlers"
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"bytes"
 )
 
 func mockConfig() config.Config {
@@ -109,9 +109,9 @@ func checkParticipateResponse(w httptest.ResponseRecorder, t *testing.T) handler
 
 func TestParticipateSpecificTests(t *testing.T) {
 	w := makeParticipateRequest(handlers.ParticipateRequest{
-		Uid: "1",
+		Uid:         "1",
 		Experiments: map[string][]string{"test1": {"a", "b"}},
-		Features: map[string]float32{"scrolling": 1},
+		Features:    map[string]float32{"scrolling": 1},
 	})
 
 	resp := checkParticipateResponse(w, t)
@@ -127,9 +127,9 @@ func TestParticipateSpecificTests(t *testing.T) {
 
 func TestBasicParticipate(t *testing.T) {
 	w := makeParticipateRequest(handlers.ParticipateRequest{
-		Uid: "1",
+		Uid:         "1",
 		Experiments: map[string][]string{},
-		Features: map[string]float32{},
+		Features:    map[string]float32{},
 	})
 
 	resp := checkParticipateResponse(w, t)

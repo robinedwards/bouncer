@@ -41,7 +41,7 @@ func TestFeaturePartEnabled(t *testing.T) {
 	}
 }
 
-func TestFeatureWithGroupMapping(t *testing.T)  {
+func TestFeatureWithGroupMapping(t *testing.T) {
 	groupConfig := map[string]int{
 		"group_a": 1,
 		"group_b": 0,

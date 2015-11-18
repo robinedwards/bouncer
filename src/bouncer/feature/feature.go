@@ -1,18 +1,17 @@
 package feature
 
 import (
-	"github.com/serialx/hashring"
 	"fmt"
+	"github.com/serialx/hashring"
 )
 
 type Feature struct {
-	Name       string 	`json:"name"`
-	Enabled    float32	`json:"enabled"`
+	Name       string  `json:"name"`
+	Enabled    float32 `json:"enabled"`
 	ring       *hashring.HashRing
 	groups     map[string]int
 	uidMapping map[string]int
 }
-
 
 func NewFeature(name string, enabled float32, groups map[string]int) Feature {
 	if enabled > 1 || enabled < 0 {

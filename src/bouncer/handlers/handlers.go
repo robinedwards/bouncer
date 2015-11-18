@@ -1,22 +1,22 @@
 package handlers
 
 import (
-	"bouncer/experiment"
 	"bouncer/config"
+	"bouncer/experiment"
 	"bouncer/feature"
-	"github.com/unrolled/render"
-	"net/http"
 	"encoding/json"
 	"fmt"
+	"github.com/unrolled/render"
 	"io/ioutil"
 	"log"
+	"net/http"
 )
 
 func Root(w http.ResponseWriter, req *http.Request) {
 	r := render.New()
 	r.JSON(w, http.StatusOK,
 		map[string][]string{
-			"App": {"bouncer"},
+			"App":   {"bouncer"},
 			"Paths": {"/experiments/", "/features/", "/groups/", "/participate/", "/stats/"},
 		})
 }
@@ -44,13 +44,13 @@ func ListGroups(cfg config.Config) func(http.ResponseWriter, *http.Request) {
 
 type ParticipateResponse struct {
 	Experiments map[string]string `json:"experiments,omitempty"`
-	Features 	map[string]bool   `json:"features,omitempty"`
+	Features    map[string]bool   `json:"features,omitempty"`
 }
 
 type ParticipateRequest struct {
-	Uid 		string				`json:"uid"`
+	Uid         string              `json:"uid"`
 	Experiments map[string][]string `json:"experiments,omitempty"`
-	Features	map[string]float32  `json:"features,omitempty"`
+	Features    map[string]float32  `json:"features,omitempty"`
 }
 
 func CheckFeatures(features map[string]float32, uid string, config config.Config) map[string]bool {
@@ -77,7 +77,6 @@ func CheckFeatures(features map[string]float32, uid string, config config.Config
 	return r
 }
 
-
 func CheckExperiments(experiments map[string][]string, uid string, config config.Config) map[string]string {
 	r := make(map[string]string)
 	// if we don't specify experiments to participate in return all
@@ -95,7 +94,7 @@ func CheckExperiments(experiments map[string][]string, uid string, config config
 		} else {
 			// Un-configured feature specified by the client.
 			alts := make([]experiment.Alternative, len(experiments[experimentName]))
-			for _, alternativeName := range(experiments[experimentName]) {
+			for _, alternativeName := range experiments[experimentName] {
 				alts = append(alts, experiment.Alternative{alternativeName, 1})
 			}
 
@@ -105,7 +104,6 @@ func CheckExperiments(experiments map[string][]string, uid string, config config
 	}
 	return r
 }
-
 
 func Participate(cfg config.Config) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {

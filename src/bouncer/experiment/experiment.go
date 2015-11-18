@@ -6,8 +6,8 @@ import (
 )
 
 type Experiment struct {
-	Name         string				`json:"name"`
-	Alternatives []Alternative		`json:"alternatives"`
+	Name         string        `json:"name"`
+	Alternatives []Alternative `json:"alternatives"`
 	ring         *hashring.HashRing
 	groups       map[string]string
 	uidMapping   map[string]string
@@ -15,9 +15,8 @@ type Experiment struct {
 
 type Alternative struct {
 	Name   string `json:"name"`
-	Weight int	  `json:"weight"`
+	Weight int    `json:"weight"`
 }
-
 
 func NewExperiment(name string, groups map[string]string, alternatives ...Alternative) Experiment {
 	weights := make(map[string]int)

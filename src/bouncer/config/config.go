@@ -9,16 +9,16 @@ import (
 )
 
 type Config struct {
-	Experiments []*experiment.Experiment `json:"experiments"`
-	Groups      []Group					`json:"groups"`
-	Features    []*feature.Feature 		`json:"features"`
-	FeatureMap  map[string]*feature.Feature
+	Experiments   []*experiment.Experiment `json:"experiments"`
+	Groups        []Group                  `json:"groups"`
+	Features      []*feature.Feature       `json:"features"`
+	FeatureMap    map[string]*feature.Feature
 	ExperimentMap map[string]*experiment.Experiment
 }
 
 type Group struct {
-	Name string		`json:"name"`
-	Uids []string	`json:"uids"`
+	Name string   `json:"name"`
+	Uids []string `json:"uids"`
 }
 
 // Take group configurations and wire them into features and experiments

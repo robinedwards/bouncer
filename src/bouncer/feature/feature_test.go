@@ -26,10 +26,8 @@ func TestFeatureDisabled(t *testing.T) {
 
 func TestFeaturePartEnabled(t *testing.T) {
 	f := feature.NewFeature("video", 0.5, make(map[string]int))
-
 	enabled := 0
 	disabled := 0
-
 	for i := 0; i < 10; i++ {
 		if f.IsEnabled(strconv.Itoa(i)) {
 			enabled += 1

@@ -9,20 +9,20 @@ import (
 )
 
 type Config struct {
-	Experiments []experiment.Experiment
-	Groups      []Group
-	Features    []feature.Feature
-	FeatureMap  map[string]feature.Feature
-	ExperimentMap map[string]experiment.Experiment
+	Experiments []*experiment.Experiment `json:"experiments"`
+	Groups      []Group					`json:"groups"`
+	Features    []*feature.Feature 		`json:"features"`
+	FeatureMap  map[string]*feature.Feature
+	ExperimentMap map[string]*experiment.Experiment
 }
 
 type Group struct {
-	Name string
-	Uids []string
+	Name string		`json:"name"`
+	Uids []string	`json:"uids"`
 }
 
 // Take group configurations and wire them into features and experiments
-func setupGroups(config *Config) error {
+func setupGroupsAndRings(config *Config) error {
 
 	groupMap := make(map[string][]string)
 
@@ -32,6 +32,7 @@ func setupGroups(config *Config) error {
 
 	for _, feature := range config.Features {
 		err := feature.SetupGroups(groupMap)
+		feature.SetupRing()
 		if err != nil {
 			return err
 		}
@@ -42,6 +43,7 @@ func setupGroups(config *Config) error {
 		if err != nil {
 			return err
 		}
+		experiment.SetupRing()
 	}
 
 	return nil
@@ -49,13 +51,13 @@ func setupGroups(config *Config) error {
 
 // Create feature and experiment mappings
 func setupMappings(config *Config) {
-	config.FeatureMap = make(map[string]feature.Feature)
+	config.FeatureMap = make(map[string]*feature.Feature)
 
 	for _, feature := range config.Features {
 		config.FeatureMap[feature.Name] = feature
 	}
 
-	config.ExperimentMap = make(map[string]experiment.Experiment)
+	config.ExperimentMap = make(map[string]*experiment.Experiment)
 
 	for _, experiment := range config.Experiments {
 		config.ExperimentMap[experiment.Name] = experiment
@@ -63,7 +65,7 @@ func setupMappings(config *Config) {
 }
 
 func InitConfig(config *Config) error {
-	err := setupGroups(config)
+	err := setupGroupsAndRings(config)
 	setupMappings(config)
 	return err
 }
@@ -89,7 +91,7 @@ func LoadConfigFile(filename string) (Config, error) {
 
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
-		fmt.Printf("%v\n", err)
+		fmt.Errorf("%v\n", err)
 		return config, err
 	}
 

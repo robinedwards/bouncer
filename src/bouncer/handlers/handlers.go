@@ -43,14 +43,14 @@ func ListGroups(cfg config.Config) func(http.ResponseWriter, *http.Request) {
 }
 
 type ParticipateResponse struct {
-	Experiments map[string]string
-	Features 	map[string]bool
+	Experiments map[string]string `json:"experiments,omitempty"`
+	Features 	map[string]bool   `json:"features,omitempty"`
 }
 
 type ParticipateRequest struct {
-	Uid 		string
-	Experiments map[string][]string
-	Features	map[string]float32
+	Uid 		string				`json:"uid"`
+	Experiments map[string][]string `json:"experiments,omitempty"`
+	Features	map[string]float32  `json:"features,omitempty"`
 }
 
 func CheckFeatures(features map[string]float32, uid string, config config.Config) map[string]bool {
@@ -80,7 +80,6 @@ func CheckFeatures(features map[string]float32, uid string, config config.Config
 
 func CheckExperiments(experiments map[string][]string, uid string, config config.Config) map[string]string {
 	r := make(map[string]string)
-
 	// if we don't specify experiments to participate in return all
 	if len(experiments) == 0 {
 		for experimentName, exp := range config.ExperimentMap {
@@ -108,12 +107,12 @@ func CheckExperiments(experiments map[string][]string, uid string, config config
 }
 
 
-func Participate(cfg config.Config, ) func(http.ResponseWriter, *http.Request) {
+func Participate(cfg config.Config) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 		r := render.New()
-
 		if req.Method != "POST" {
 			r.JSON(w, http.StatusMethodNotAllowed, "Method not supported")
+			fmt.Errorf("ERROR: method not supported")
 			return
 		}
 
@@ -121,21 +120,22 @@ func Participate(cfg config.Config, ) func(http.ResponseWriter, *http.Request) {
 
 		body, rerr := ioutil.ReadAll(req.Body)
 		if rerr != nil {
-			r.JSON(w, http.StatusBadRequest, fmt.Sprintf("Error reading body: %v", rerr))
-			fmt.Println("ERROR: reading body: %v", rerr)
+			r.JSON(w, http.StatusBadRequest, fmt.Sprintf("Error reading body: ", rerr))
+			fmt.Errorf("ERROR: reading body: %v", rerr)
 			return
 		}
 
 		err := json.Unmarshal(body, &preq)
 		if err != nil {
-			r.JSON(w, http.StatusBadRequest, fmt.Sprintf("Error decoding json: %v", err))
-			fmt.Println("ERROR: decoding json: %v", err)
+			r.JSON(w, http.StatusBadRequest, fmt.Sprintf("Error decoding json: ", err))
+			fmt.Errorf("ERROR: decoding json:", err, "received:", string(body))
 			return
 		}
 
 		presp := new(ParticipateResponse)
 
 		presp.Experiments = CheckExperiments(preq.Experiments, preq.Uid, cfg)
+
 		presp.Features = CheckFeatures(preq.Features, preq.Uid, cfg)
 
 		r.JSON(w, http.StatusOK, presp)
@@ -146,7 +146,7 @@ func Participate(cfg config.Config, ) func(http.ResponseWriter, *http.Request) {
 func logParticipation(presp ParticipateResponse) {
 	body, err := json.Marshal(presp)
 	if err != nil {
-		fmt.Println("ERROR: couldn't encode json response: %v", err)
+		fmt.Errorf("ERROR: couldn't encode json response: %v", err)
 	}
 	log.Println(body)
 }

@@ -2,11 +2,12 @@ package feature
 
 import (
 	"github.com/serialx/hashring"
+	"fmt"
 )
 
 type Feature struct {
-	Name       string
-	Enabled    float32
+	Name       string 	`json:"name"`
+	Enabled    float32	`json:"enabled"`
 	ring       *hashring.HashRing
 	groups     map[string]int
 	uidMapping map[string]int
@@ -18,20 +19,21 @@ func NewFeature(name string, enabled float32, groups map[string]int) Feature {
 		panic("enabled must be between > 0 and <= 1")
 	}
 
-	var ring *hashring.HashRing
-
-	if enabled > 0 && enabled < 1 {
-		weights := make(map[string]int)
-
-		weights["enabled"] = int(enabled * 100)
-		weights["disabled"] = int((1 - enabled) * 100)
-		ring = hashring.NewWithWeights(weights)
-	}
-
-	return Feature{name, enabled, ring, groups, make(map[string]int)}
+	f := Feature{name, enabled, nil, groups, make(map[string]int)}
+	f.SetupRing()
+	return f
 }
 
-func (f Feature) SetupGroups(groups map[string][]string) error {
+func (f *Feature) SetupRing() {
+	if f.Enabled > 0.0 && f.Enabled < 1.0 {
+		weights := make(map[string]int)
+		weights["enabled"] = int(f.Enabled * 100)
+		weights["disabled"] = int((1 - f.Enabled) * 100)
+		f.ring = hashring.NewWithWeights(weights)
+	}
+}
+
+func (f *Feature) SetupGroups(groups map[string][]string) error {
 	for groupName, status := range f.groups {
 		groupUids := groups[groupName]
 
@@ -43,7 +45,7 @@ func (f Feature) SetupGroups(groups map[string][]string) error {
 	return nil
 }
 
-func (f Feature) IsEnabled(uid string) bool {
+func (f *Feature) IsEnabled(uid string) bool {
 	// has uid been overriden in a group
 	if status, ok := f.uidMapping[uid]; ok {
 		return status == 1
@@ -53,7 +55,10 @@ func (f Feature) IsEnabled(uid string) bool {
 		return f.Enabled == 1
 	}
 
-	r, _ := f.ring.GetNode(uid)
-
+	r, err := f.ring.GetNode(uid)
+	if !err {
+		fmt.Errorf("ERROR: getting node for feature, disabling by default")
+		return false
+	}
 	return r == "enabled"
 }

@@ -6,17 +6,18 @@ import (
 )
 
 type Experiment struct {
-	Name         string
-	Alternatives []Alternative
-	ring         hashring.HashRing
+	Name         string				`json:"name"`
+	Alternatives []Alternative		`json:"alternatives"`
+	ring         *hashring.HashRing
 	groups       map[string]string
 	uidMapping   map[string]string
 }
 
 type Alternative struct {
-	Name   string
-	Weight int
+	Name   string `json:"name"`
+	Weight int	  `json:"weight"`
 }
+
 
 func NewExperiment(name string, groups map[string]string, alternatives ...Alternative) Experiment {
 	weights := make(map[string]int)
@@ -24,10 +25,9 @@ func NewExperiment(name string, groups map[string]string, alternatives ...Altern
 	for _, alt := range alternatives {
 		weights[alt.Name] = alt.Weight
 	}
-
 	ring := hashring.NewWithWeights(weights)
 
-	return Experiment{name, alternatives, *ring, groups, make(map[string]string)}
+	return Experiment{name, alternatives, ring, groups, make(map[string]string)}
 }
 
 func (exp *Experiment) GetAlternative(uid string) string {
@@ -35,17 +35,17 @@ func (exp *Experiment) GetAlternative(uid string) string {
 	if groupAlt, ok := exp.uidMapping[uid]; ok {
 		return groupAlt
 	}
-
 	alt, err := exp.ring.GetNode(uid)
 
 	if !err {
-		panic(err)
+		fmt.Errorf("ERROR: getting alternate, defaulting to first")
+		return exp.Alternatives[0].Name
 	}
 
 	return alt
 }
 
-func (exp Experiment) SetupGroups(groups map[string][]string) error {
+func (exp *Experiment) SetupGroups(groups map[string][]string) error {
 	for groupName, alternativeName := range exp.groups {
 		groupUids := groups[groupName]
 
@@ -58,7 +58,7 @@ func (exp Experiment) SetupGroups(groups map[string][]string) error {
 		}
 
 		if !found {
-			return fmt.Errorf("Alternative %s from group %s not in experiment %s",
+			return fmt.Errorf("ERROR: Alternative %s from group %s not in experiment %s",
 				alternativeName, groupName, exp.Name)
 		}
 
@@ -68,4 +68,14 @@ func (exp Experiment) SetupGroups(groups map[string][]string) error {
 	}
 
 	return nil
+}
+
+func (exp *Experiment) SetupRing() {
+	weights := make(map[string]int)
+
+	for _, alt := range exp.Alternatives {
+		weights[alt.Name] = alt.Weight
+	}
+
+	exp.ring = hashring.NewWithWeights(weights)
 }

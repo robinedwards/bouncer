@@ -18,10 +18,10 @@ type Alternative struct {
 	Weight int    `json:"weight"`
 }
 
-func NewExperiment(name string, groups map[string]string, alternatives ...Alternative) Experiment {
+func NewExperiment(name string, groups map[string]string, alternatives ...Alternative) *Experiment {
 	exp := Experiment{name, alternatives, nil, groups, make(map[string]string)}
 	exp.SetupRing()
-	return exp
+	return &exp
 }
 
 func (exp *Experiment) GetAlternative(uid string) string {

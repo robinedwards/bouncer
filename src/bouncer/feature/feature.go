@@ -13,14 +13,14 @@ type Feature struct {
 	uidMapping map[string]int
 }
 
-func NewFeature(name string, enabled float32, groups map[string]int) Feature {
+func NewFeature(name string, enabled float32, groups map[string]int) *Feature {
 	if enabled > 1 || enabled < 0 {
 		panic("enabled must be between > 0 and <= 1")
 	}
 
 	f := Feature{name, enabled, nil, groups, make(map[string]int)}
 	f.SetupRing()
-	return f
+	return &f
 }
 
 func (f *Feature) SetupRing() {

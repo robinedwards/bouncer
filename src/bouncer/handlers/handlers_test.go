@@ -109,7 +109,7 @@ func checkParticipateResponse(w httptest.ResponseRecorder, t *testing.T) handler
 
 func TestParticipateSpecificTests(t *testing.T) {
 	w := makeParticipateRequest(handlers.ParticipateRequest{
-		Uid:         "1",
+		Context:         handlers.Context{"1"},
 		Experiments: map[string][]string{"test1": {"a", "b"}},
 		Features:    map[string]float32{"scrolling": 1},
 	})
@@ -127,7 +127,7 @@ func TestParticipateSpecificTests(t *testing.T) {
 
 func TestBasicParticipate(t *testing.T) {
 	w := makeParticipateRequest(handlers.ParticipateRequest{
-		Uid:         "1",
+		Context:         handlers.Context{"1"},
 		Experiments: map[string][]string{},
 		Features:    map[string]float32{},
 	})

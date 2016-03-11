@@ -5,11 +5,14 @@ import (
 	"bouncer/experiment"
 	"bouncer/feature"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/getsentry/raven-go"
 	"github.com/unrolled/render"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"runtime/debug"
 )
 
 type Context struct {
@@ -25,6 +28,25 @@ type ParticipateRequest struct {
 	Context     Context             `json:"context"`
 	Experiments map[string][]string `json:"experiments,omitempty"`
 	Features    map[string]float32  `json:"features,omitempty"`
+}
+
+func ErrorHandler(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if rval := recover(); rval != nil {
+				rvalStr := fmt.Sprint(rval)
+				packet := raven.NewPacket(rvalStr,
+					raven.NewException(errors.New(rvalStr), raven.NewStacktrace(2, 3, nil)),
+					raven.NewHttp(r))
+				raven.Capture(packet, nil)
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte(fmt.Sprintf("500 Server Error: %s\n\n", rval)))
+					w.Write(debug.Stack())
+			}
+		}()
+
+		handler.ServeHTTP(w, r)
+	})
 }
 
 func Root(w http.ResponseWriter, req *http.Request) {

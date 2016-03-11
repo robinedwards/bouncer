@@ -118,15 +118,15 @@ func Participate(cfg config.Config) func(http.ResponseWriter, *http.Request) {
 
 		body, rerr := ioutil.ReadAll(req.Body)
 		if rerr != nil {
-			r.JSON(w, http.StatusBadRequest, fmt.Sprintf("Error reading body: ", rerr))
+			r.JSON(w, http.StatusBadRequest, fmt.Sprintf("Error reading body: %s", rerr))
 			fmt.Errorf("ERROR: reading body: %v", rerr)
 			return
 		}
 
 		err := json.Unmarshal(body, &preq)
 		if err != nil {
-			r.JSON(w, http.StatusBadRequest, fmt.Sprintf("Error decoding json: ", err))
-			fmt.Errorf("ERROR: decoding json:", err, "received:", string(body))
+			r.JSON(w, http.StatusBadRequest, fmt.Sprintf("Error decoding json: %s", err))
+			fmt.Errorf("ERROR: decoding json: %s received: %s", err, string(body))
 			return
 		}
 

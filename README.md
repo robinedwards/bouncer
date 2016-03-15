@@ -2,7 +2,7 @@
 
 ## Getting started
 
-    $ go get ./...
+    $ go get bouncer/...
     $ export GOPATH=$(pwd)
 
 Run all tests:

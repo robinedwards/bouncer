@@ -2,15 +2,26 @@
 
 ## Getting started
 
-    $ go get github.com/gorilla/mux github.com/unrolled/render github.com/serialx/hashring
-
+    $ go get ./...
     $ export GOPATH=$(pwd)
 
 Run all tests:
 
     $ go test bouncer/...
 
-Build:
+Execute:
 
     $ go run main.go
     Listening on localhost:8000
+
+Flags:
+
+    -help
+    -config string
+        config file (default "config.json")
+    -listen string
+        host and port to listen on (default "localhost:8000")
+    -log string
+        log file (default "./paricipation.log")
+    -sentry string
+        Sentry DSN

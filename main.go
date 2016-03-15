@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/getsentry/raven-go"
 	"github.com/gorilla/mux"
 	"github.com/thoas/stats"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -20,17 +21,21 @@ import (
 
 func setupRouter(cfg config.Config) http.Handler {
 	ourStats := stats.New()
+
 	router := mux.NewRouter()
 	router.HandleFunc("/", handlers.Root)
 	router.HandleFunc("/experiments/", handlers.ListExperiments(cfg))
 	router.HandleFunc("/groups/", handlers.ListGroups(cfg))
 	router.HandleFunc("/features/", handlers.ListFeatures(cfg))
 	router.HandleFunc("/participate/", handlers.Participate(cfg))
+	router.HandleFunc("/error/", func(w http.ResponseWriter, r *http.Request) { panic("error") })
 	router.HandleFunc("/stats/", func(w http.ResponseWriter, r *http.Request) {
 		b, _ := json.Marshal(ourStats.Data())
 		w.Write(b)
 	})
-	return ourStats.Handler(gorillahandlers.LoggingHandler(os.Stdout, router))
+
+	return gorillahandlers.LoggingHandler(os.Stdout, handlers.ErrorHandler(
+		ourStats.Handler(router)))
 }
 
 func setupMetricsLogging(logfile string) {
@@ -58,22 +63,33 @@ func main() {
 	// parse arguments
 	listenPtr := flag.String("listen", "localhost:8000", "host and port to listen on")
 	configPtr := flag.String("config", "config.json", "config file")
+	sentryPtr := flag.String("sentry", "", "Sentry DSN")
 	logFilePtr := flag.String("log", "./paricipation.log", "log file")
-
 	flag.Parse()
 
-	// load config
-	bouncerConfig, err := config.LoadConfigFile(*configPtr)
-	if err != nil {
-		os.Exit(1)
+	if len(*sentryPtr) > 0 {
+		fmt.Println("Setting up Sentry")
+		raven.SetDSN(*sentryPtr)
 	}
 
 	if len(*configPtr) == 0 {
-		fmt.Println("No config file supplied with --config")
-		return
+		log.Fatalf("No config file supplied with --config")
 	}
+
+	// load config
+	bouncerConfig, err := config.LoadConfigFile(*configPtr)
+
+	if err != nil {
+		log.Fatalf("Couldn't load config '%s': %s", *configPtr, err)
+	}
+
 	setupMetricsLogging(*logFilePtr)
 
 	fmt.Println("Listening on", *listenPtr, "and logging to", *logFilePtr)
-	http.ListenAndServe(*listenPtr, setupRouter(bouncerConfig))
+
+	err = http.ListenAndServe(*listenPtr, setupRouter(bouncerConfig))
+	if err != nil {
+		fmt.Errorf("Error listening: %s", err)
+		os.Exit(1)
+	}
 }

@@ -22,6 +22,6 @@ Flags:
     -listen string
         host and port to listen on (default "localhost:8000")
     -log string
-        log file (default "./paricipation.log")
+        log file (default "./participation.log")
     -sentry string
         Sentry DSN

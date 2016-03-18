@@ -2,8 +2,10 @@
 
 ## Getting started
 
-    $ go get bouncer/...
+Install dependencies
+
     $ export GOPATH=$(pwd)
+    $ go get bouncer/...
 
 Run all tests:
 
@@ -11,7 +13,7 @@ Run all tests:
 
 Execute:
 
-    $ go run main.go
+    $ go run main.go -config yourconfig.json
     Listening on localhost:8000
 
 Flags:
@@ -25,3 +27,7 @@ Flags:
         log file (default "./participation.log")
     -sentry string
         Sentry DSN
+
+Signals:
+    SIGHUP - log rotate
+    SIGUSR2 - reload configuration file

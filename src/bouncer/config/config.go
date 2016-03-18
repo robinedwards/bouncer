@@ -86,21 +86,21 @@ func LoadConfig(jsonConfig string) (Config, error) {
 	return config, err
 }
 
-func LoadConfigFile(filename string) (Config, error) {
+func LoadConfigFile(filename string) (*Config, error) {
 	var config Config
 
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
 		fmt.Errorf("%v\n", err)
-		return config, err
+		return &config, err
 	}
 
 	merr := json.Unmarshal(file, &config)
 	if merr != nil {
-		return config, merr
+		return &config, merr
 	}
 
 	perr := InitConfig(&config)
 
-	return config, perr
+	return &config, perr
 }

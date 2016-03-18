@@ -15,6 +15,8 @@ import (
 	"runtime/debug"
 )
 
+type ConfigFactory func () *config.Config
+
 type Context struct {
 	Uid string `json:"uid"`
 }
@@ -53,37 +55,37 @@ func Root(w http.ResponseWriter, req *http.Request) {
 	r := render.New()
 	r.JSON(w, http.StatusOK,
 		map[string][]string{
-			"App":   {"bouncer"},
-			"Paths": {"/experiments/", "/features/", "/groups/", "/participate/", "/stats/"},
+			"app":   {"bouncer"},
+			"paths": {"/experiments/", "/features/", "/groups/", "/participate/", "/stats/"},
 		})
 }
 
-func ListExperiments(cfg config.Config) func(http.ResponseWriter, *http.Request) {
+func ListExperiments(cfg ConfigFactory) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 		r := render.New()
-		r.JSON(w, http.StatusOK, cfg.Experiments)
+		r.JSON(w, http.StatusOK, cfg().Experiments)
 	}
 }
 
-func ListFeatures(cfg config.Config) func(http.ResponseWriter, *http.Request) {
+func ListFeatures(cfg ConfigFactory) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 		r := render.New()
-		r.JSON(w, http.StatusOK, cfg.Features)
+		r.JSON(w, http.StatusOK, cfg().Features)
 	}
 }
 
-func ListGroups(cfg config.Config) func(http.ResponseWriter, *http.Request) {
+func ListGroups(cfg ConfigFactory) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 		r := render.New()
-		r.JSON(w, http.StatusOK, cfg.Groups)
+		r.JSON(w, http.StatusOK, cfg().Groups)
 	}
 }
 
-func CheckFeatures(features map[string]float32, uid string, config config.Config) map[string]bool {
+func CheckFeatures(features map[string]float32, uid string, cfg config.Config) map[string]bool {
 	r := make(map[string]bool)
 
 	if len(features) == 0 {
-		for featureName, f := range config.FeatureMap {
+		for featureName, f := range cfg.FeatureMap {
 			r[featureName] = f.IsEnabled(uid)
 		}
 
@@ -91,7 +93,7 @@ func CheckFeatures(features map[string]float32, uid string, config config.Config
 	}
 
 	for featureName, _ := range features {
-		if f, ok := config.FeatureMap[featureName]; ok {
+		if f, ok := cfg.FeatureMap[featureName]; ok {
 			r[f.Name] = f.IsEnabled(uid)
 		} else {
 			// Un-configured feature specified by the client.
@@ -103,11 +105,11 @@ func CheckFeatures(features map[string]float32, uid string, config config.Config
 	return r
 }
 
-func CheckExperiments(experiments map[string][]string, uid string, config config.Config) map[string]string {
+func CheckExperiments(experiments map[string][]string, uid string, cfg config.Config) map[string]string {
 	r := make(map[string]string)
 	// if we don't specify experiments to participate in return all
 	if len(experiments) == 0 {
-		for experimentName, exp := range config.ExperimentMap {
+		for experimentName, exp := range cfg.ExperimentMap {
 			r[experimentName] = exp.GetAlternative(uid)
 		}
 		return r
@@ -115,7 +117,7 @@ func CheckExperiments(experiments map[string][]string, uid string, config config
 
 	// else only return requested experiments
 	for experimentName, _ := range experiments {
-		if e, ok := config.ExperimentMap[experimentName]; ok {
+		if e, ok := cfg.ExperimentMap[experimentName]; ok {
 			r[experimentName] = e.GetAlternative(uid)
 		} else {
 			// Un-configured feature specified by the client.
@@ -131,7 +133,8 @@ func CheckExperiments(experiments map[string][]string, uid string, config config
 	return r
 }
 
-func Participate(cfg config.Config) func(http.ResponseWriter, *http.Request) {
+func Participate(config ConfigFactory) func(http.ResponseWriter, *http.Request) {
+	cfg := *config()
 	return func(w http.ResponseWriter, req *http.Request) {
 		r := render.New()
 		if req.Method != "POST" {

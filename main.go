@@ -16,10 +16,11 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 )
 
-func setupRouter(cfg config.Config) http.Handler {
+func setupRouter(cfg func() *config.Config) http.Handler {
 	ourStats := stats.New()
 
 	router := mux.NewRouter()
@@ -48,10 +49,11 @@ func setupMetricsLogging(logfile string) {
 
 	log.SetOutput(logger)
 	log.SetFlags(0)
-	sighup := make(chan os.Signal, 1)
-	signal.Notify(sighup, syscall.SIGHUP)
 
 	go func() {
+		sighup := make(chan os.Signal, 1)
+		signal.Notify(sighup, syscall.SIGHUP)
+
 		for {
 			<-sighup
 			logger.Rotate()
@@ -59,12 +61,44 @@ func setupMetricsLogging(logfile string) {
 	}()
 }
 
+func setupConfigReload(filename string) {
+	go func() {
+		reload := make(chan os.Signal, 1)
+		signal.Notify(reload, syscall.SIGUSR2)
+
+		for {
+			<-reload
+			tmp, err := config.LoadConfigFile(filename)
+
+			if err != nil {
+				fmt.Errorf("Error reloading config %s", err)
+				return
+			}
+
+			configLock.RLock()
+			*bouncerConfig = *tmp
+			configLock.RUnlock()
+
+			fmt.Println("Reloaded config:", filename)
+		}
+	}()
+}
+
+var bouncerConfig *config.Config
+var configLock = new(sync.RWMutex)
+
+func getConfig() *config.Config {
+	configLock.RLock()
+	defer configLock.RUnlock()
+	return bouncerConfig
+}
+
 func main() {
-	// parse arguments
+	// Parse arguments
 	listenPtr := flag.String("listen", "localhost:8000", "host and port to listen on")
 	configPtr := flag.String("config", "config.json", "config file")
 	sentryPtr := flag.String("sentry", "", "Sentry DSN")
-	logFilePtr := flag.String("log", "./paricipation.log", "log file")
+	logFilePtr := flag.String("log", "./participation.log", "log file")
 	flag.Parse()
 
 	if len(*sentryPtr) > 0 {
@@ -77,19 +111,21 @@ func main() {
 	}
 
 	// load config
-	bouncerConfig, err := config.LoadConfigFile(*configPtr)
-
+	tmp, err := config.LoadConfigFile(*configPtr)
 	if err != nil {
 		log.Fatalf("Couldn't load config '%s': %s", *configPtr, err)
 	}
 
+	bouncerConfig = tmp
+
+	// setup signal handlers
+	setupConfigReload(*configPtr)
 	setupMetricsLogging(*logFilePtr)
 
-	fmt.Println("Listening on", *listenPtr, "and logging to", *logFilePtr)
-
-	err = http.ListenAndServe(*listenPtr, setupRouter(bouncerConfig))
+	fmt.Println("Listening on", *listenPtr, "and logging to", *logFilePtr, "pid", os.Getpid())
+	err = http.ListenAndServe(*listenPtr, setupRouter(getConfig))
 	if err != nil {
-		fmt.Errorf("Error listening: %s", err)
+		fmt.Println(err)
 		os.Exit(1)
 	}
 }

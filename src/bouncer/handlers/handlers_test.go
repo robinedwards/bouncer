@@ -13,7 +13,7 @@ import (
 	"testing"
 )
 
-func mockConfig() config.Config {
+func mockConfig() *config.Config {
 	cfg := config.Config{}
 	cfg.Experiments = append(cfg.Experiments, experiment.NewExperiment("test1",
 		make(map[string]string),
@@ -29,7 +29,7 @@ func mockConfig() config.Config {
 
 	config.InitConfig(&cfg)
 
-	return cfg
+	return &cfg
 }
 
 func checkValidResponse(code int, w *httptest.ResponseRecorder, t *testing.T) {
@@ -44,9 +44,7 @@ func checkValidResponse(code int, w *httptest.ResponseRecorder, t *testing.T) {
 }
 
 func TestListExperiments(t *testing.T) {
-	mockCfg := mockConfig()
-
-	h := handlers.ListExperiments(mockCfg)
+	h := handlers.ListExperiments(mockConfig)
 	req, _ := http.NewRequest("GET", "/experiments/", nil)
 	w := httptest.NewRecorder()
 
@@ -56,9 +54,7 @@ func TestListExperiments(t *testing.T) {
 }
 
 func TestListFeatures(t *testing.T) {
-	mockCfg := mockConfig()
-
-	h := handlers.ListFeatures(mockCfg)
+	h := handlers.ListFeatures(mockConfig)
 	req, _ := http.NewRequest("GET", "/features/", nil)
 	w := httptest.NewRecorder()
 
@@ -67,9 +63,7 @@ func TestListFeatures(t *testing.T) {
 }
 
 func TestListGroups(t *testing.T) {
-	mockCfg := mockConfig()
-
-	h := handlers.ListGroups(mockCfg)
+	h := handlers.ListGroups(mockConfig)
 	req, _ := http.NewRequest("GET", "/groups/", nil)
 	w := httptest.NewRecorder()
 
@@ -78,9 +72,7 @@ func TestListGroups(t *testing.T) {
 }
 
 func makeParticipateRequest(req handlers.ParticipateRequest) httptest.ResponseRecorder {
-	mockCfg := mockConfig()
-
-	h := handlers.Participate(mockCfg)
+	h := handlers.Participate(mockConfig)
 	body, _ := json.Marshal(req)
 
 	r, _ := http.NewRequest("POST", "/participate/", bytes.NewReader(body))

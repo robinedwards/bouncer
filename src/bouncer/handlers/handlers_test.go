@@ -32,6 +32,8 @@ func mockConfig() *config.Config {
 	return &cfg
 }
 
+func fakeLogger(interface{}) {}
+
 func checkValidResponse(code int, w *httptest.ResponseRecorder, t *testing.T) {
 	if w.Code != code {
 		t.Errorf("Expected %s got %s", code, w.Code)
@@ -72,7 +74,7 @@ func TestListGroups(t *testing.T) {
 }
 
 func makeParticipateRequest(req handlers.ParticipateRequest) httptest.ResponseRecorder {
-	h := handlers.Participate(mockConfig)
+	h := handlers.Participate(mockConfig, fakeLogger)
 	body, _ := json.Marshal(req)
 
 	r, _ := http.NewRequest("POST", "/participate/", bytes.NewReader(body))

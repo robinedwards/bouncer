@@ -8,19 +8,20 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/fluent/fluent-logger-golang/fluent"
 	"github.com/getsentry/raven-go"
 	"github.com/gorilla/mux"
 	"github.com/thoas/stats"
-	"gopkg.in/natefinch/lumberjack.v2"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 )
 
-func setupRouter(cfg func() *config.Config) http.Handler {
+func setupRouter(cfg func() *config.Config, logger func(interface{})) http.Handler {
 	ourStats := stats.New()
 
 	router := mux.NewRouter()
@@ -28,7 +29,7 @@ func setupRouter(cfg func() *config.Config) http.Handler {
 	router.HandleFunc("/experiments/", handlers.ListExperiments(cfg))
 	router.HandleFunc("/groups/", handlers.ListGroups(cfg))
 	router.HandleFunc("/features/", handlers.ListFeatures(cfg))
-	router.HandleFunc("/participate/", handlers.Participate(cfg))
+	router.HandleFunc("/participate/", handlers.Participate(cfg, logger))
 	router.HandleFunc("/error/", func(w http.ResponseWriter, r *http.Request) { panic("error") })
 	router.HandleFunc("/stats/", func(w http.ResponseWriter, r *http.Request) {
 		b, _ := json.Marshal(ourStats.Data())
@@ -39,26 +40,31 @@ func setupRouter(cfg func() *config.Config) http.Handler {
 		ourStats.Handler(router)))
 }
 
-func setupMetricsLogging(logfile string) {
-	logger := &lumberjack.Logger{
-		Filename:   logfile,
-		MaxSize:    500, // megabytes
-		MaxBackups: 3,
-		MaxAge:     28, // days
+func setupFluentd(fluentHost string) func(interface{}) {
+	parts := strings.Split(fluentHost, ":")
+	if len(parts) != 2 {
+		fmt.Fprintf(os.Stderr, "invalid fluentd host format, should be <hostname>:<port>")
+		os.Exit(1)
 	}
 
-	log.SetOutput(logger)
-	log.SetFlags(0)
+	port, err := strconv.Atoi(parts[1])
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "invalid port for fluentd")
+		os.Exit(1)
+	}
 
-	go func() {
-		sighup := make(chan os.Signal, 1)
-		signal.Notify(sighup, syscall.SIGHUP)
+	cfg := fluent.Config{FluentHost: parts[0], FluentPort: port}
+	logger, err := fluent.New(cfg)
 
-		for {
-			<-sighup
-			logger.Rotate()
+	return func(message interface{}) {
+		body, err := json.Marshal(message)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "ERROR: couldn't encode json response: %v", err)
 		}
-	}()
+
+		fmt.Println(body)
+		logger.Post("bouncer", message)
+	}
 }
 
 func setupConfigReload(filename string) {
@@ -71,7 +77,7 @@ func setupConfigReload(filename string) {
 			tmp, err := config.LoadConfigFile(filename)
 
 			if err != nil {
-				fmt.Errorf("Error reloading config %s", err)
+				fmt.Fprintln(os.Stderr, "Error reloading config", err)
 				return
 			}
 
@@ -98,7 +104,7 @@ func main() {
 	listenPtr := flag.String("listen", "localhost:8000", "host and port to listen on")
 	configPtr := flag.String("config", "config.json", "config file")
 	sentryPtr := flag.String("sentry", "", "Sentry DSN")
-	logFilePtr := flag.String("log", "./participation.log", "log file")
+	fluentPtr := flag.String("fluent", "localhost:24220", "td-agent host and port")
 	flag.Parse()
 
 	if len(*sentryPtr) > 0 {
@@ -106,26 +112,23 @@ func main() {
 		raven.SetDSN(*sentryPtr)
 	}
 
-	if len(*configPtr) == 0 {
-		log.Fatalf("No config file supplied with --config")
-	}
-
 	// load config
 	tmp, err := config.LoadConfigFile(*configPtr)
 	if err != nil {
-		log.Fatalf("Couldn't load config '%s': %s", *configPtr, err)
+		fmt.Fprintf(os.Stderr, "Couldn't load config '%s': %s\n", *configPtr, err)
+		os.Exit(1)
 	}
 
 	bouncerConfig = tmp
 
-	// setup signal handlers
 	setupConfigReload(*configPtr)
-	setupMetricsLogging(*logFilePtr)
+	logger := setupFluentd(*fluentPtr)
 
-	fmt.Println("Listening on", *listenPtr, "and logging to", *logFilePtr, "pid", os.Getpid())
-	err = http.ListenAndServe(*listenPtr, setupRouter(getConfig))
+	fmt.Println("Listening on", *listenPtr, "and logging to", *fluentPtr, "pid", os.Getpid())
+	err = http.ListenAndServe(*listenPtr, setupRouter(getConfig, logger))
+
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(74) // io error
 	}
 }

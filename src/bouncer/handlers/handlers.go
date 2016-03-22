@@ -10,7 +10,6 @@ import (
 	"github.com/getsentry/raven-go"
 	"github.com/unrolled/render"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"runtime/debug"
 )
@@ -133,8 +132,9 @@ func CheckExperiments(experiments map[string][]string, uid string, cfg config.Co
 	return r
 }
 
-func Participate(config ConfigFactory) func(http.ResponseWriter, *http.Request) {
+func Participate(config ConfigFactory, logger func (interface{})) func(http.ResponseWriter, *http.Request) {
 	cfg := *config()
+
 	return func(w http.ResponseWriter, req *http.Request) {
 		r := render.New()
 		if req.Method != "POST" {
@@ -160,20 +160,11 @@ func Participate(config ConfigFactory) func(http.ResponseWriter, *http.Request) 
 		}
 
 		presp := new(ParticipateResponse)
-
 		presp.Experiments = CheckExperiments(preq.Experiments, preq.Context.Uid, cfg)
-
 		presp.Features = CheckFeatures(preq.Features, preq.Context.Uid, cfg)
 
 		r.JSON(w, http.StatusOK, presp)
-		go logParticipation(*presp)
+		go logger(*presp)
 	}
 }
 
-func logParticipation(presp ParticipateResponse) {
-	body, err := json.Marshal(presp)
-	if err != nil {
-		fmt.Errorf("ERROR: couldn't encode json response: %v", err)
-	}
-	log.Println(body)
-}

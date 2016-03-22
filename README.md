@@ -23,11 +23,10 @@ Flags:
         config file (default "config.json")
     -listen string
         host and port to listen on (default "localhost:8000")
-    -log string
-        log file (default "./participation.log")
+    -fluent string
+        fluentd host and port
     -sentry string
         Sentry DSN
 
 Signals:
-    SIGHUP - log rotate
     SIGUSR2 - reload configuration file

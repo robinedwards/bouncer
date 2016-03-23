@@ -30,3 +30,13 @@ Flags:
 
 Signals:
     SIGUSR2 - reload configuration file
+
+## Container
+
+Building the container:
+
+    $ docker build -t bouncer .
+
+Executing the container:
+
+    $ docker run -ti -p 9000:9000 -v /path/to/folder/with/config/:/etc/bouncer bouncer -fluent fluenthost:1234

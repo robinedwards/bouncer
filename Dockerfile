@@ -11,7 +11,7 @@ RUN go get bouncer/... && \
     chmod +x bouncer
 
 VOLUME /etc/bouncer
-
-CMD ./bouncer -config /etc/bouncer/config.json -listen 0.0.0.0:9000
-
 EXPOSE 9000
+
+ENTRYPOINT ["/go/src/bouncer/bouncer", "-config", "/etc/bouncer/config.json", "-listen", "0.0.0.0:9000"]
+CMD ["-fluent", "localhost:24220"]

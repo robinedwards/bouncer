@@ -10,8 +10,7 @@ RUN go get bouncer/... && \
     go build -o bouncer main.go && \
     chmod +x bouncer
 
-VOLUME /etc/bouncer
 EXPOSE 9000
 
-ENTRYPOINT ["/go/src/bouncer/bouncer", "-config", "/etc/bouncer/config.json", "-listen", "0.0.0.0:9000"]
-CMD ["-fluent", "localhost:24220"]
+ENTRYPOINT ["/go/src/bouncer/bouncer"]
+CMD ["-config", "/etc/bouncer/config.json", "-listen", "0.0.0.0:9000", "-fluent", "localhost:24220"]

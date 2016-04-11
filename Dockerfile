@@ -18,4 +18,4 @@ RUN apk add --no-cache git && \
 EXPOSE 9000
 
 ENTRYPOINT ["/usr/bin/bouncer"]
-CMD ["-config", "/etc/bouncer/config.json", "-listen", "0.0.0.0:9000", "-fluent", "localhost:24220"]
+CMD ["-config", "/etc/bouncer/config.json", "-listen", "0.0.0.0:9000", "-fluent", "172.17.42.1:24220"]

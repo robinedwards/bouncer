@@ -57,12 +57,6 @@ func setupFluentd(fluentHost string) func(interface{}) {
 	logger, err := fluent.New(cfg)
 
 	return func(message interface{}) {
-		body, err := json.Marshal(message)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: couldn't encode json response: %v", err)
-		}
-
-		fmt.Println(body)
 		logger.Post("bouncer", message)
 	}
 }

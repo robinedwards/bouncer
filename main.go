@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/fluent/fluent-logger-golang/fluent"
 	"github.com/getsentry/raven-go"
 	"github.com/gorilla/mux"
@@ -57,6 +58,7 @@ func setupFluentd(fluentHost string) func(interface{}) {
 	logger, err := fluent.New(cfg)
 
 	return func(message interface{}) {
+		spew.Sprintln(message)
 		logger.Post("bouncer", message)
 	}
 }

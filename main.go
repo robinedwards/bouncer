@@ -103,9 +103,15 @@ func main() {
 	fluentPtr := flag.String("fluent", "localhost:24220", "td-agent host and port")
 	flag.Parse()
 
+	// setup sentry
+	dsn := os.Getenv("SENTRY_DSN")
 	if len(*sentryPtr) > 0 {
-		fmt.Println("Setting up Sentry")
-		raven.SetDSN(*sentryPtr)
+		dsn = *sentryPtr
+	}
+
+	if len(dsn) > 0 {
+		fmt.Println("Enabling sentry: ", dsn)
+		raven.SetDSN(dsn)
 	}
 
 	// load config
